@@ -1,19 +1,20 @@
 ---
 class: code
+language: Python
 ---
 ## Description
 
 
 ---
 ## Code
-```python
-def WriteSoftware_GitBridge(SoftwareProject,codeblock,language):
+```Python
+def WriteSoftware_GitBridge(function,SoftwareProject,codeblock,language):
     CodingFolder = SoftwareProject + '/functions'
     if language == 'markdown':
         return 0
-    LanguageExtensions = {"python" : "py",
+    LanguageExtensions = {"Python" : "py",
                           "javascript" : "js",
-                          "bash" : "sh", 
+                          "bash" : "sh",
                           "markdown" : "md"}        
     extension = LanguageExtensions[language]
     fileName = function.replace('.md','') + '.' + extension

@@ -1,11 +1,11 @@
 
-def WriteSoftware_GitBridge(SoftwareProject,codeblock,language):
+def WriteSoftware_GitBridge(function,SoftwareProject,codeblock,language):
     CodingFolder = SoftwareProject + '/functions'
     if language == 'markdown':
         return 0
-    LanguageExtensions = {"" : "py",
+    LanguageExtensions = {"Python" : "py",
                           "javascript" : "js",
-                          "bash" : "sh", 
+                          "bash" : "sh",
                           "markdown" : "md"}        
     extension = LanguageExtensions[language]
     fileName = function.replace('.md','') + '.' + extension
@@ -13,5 +13,4 @@ def WriteSoftware_GitBridge(SoftwareProject,codeblock,language):
     file = open(fileLoc,'w')
     file.write(codeblock)
     file.close()
-
 
