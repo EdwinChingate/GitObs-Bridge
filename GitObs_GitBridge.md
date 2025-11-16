@@ -1,3 +1,13 @@
+---
+class: code
+language: Python
+---
+## Description
+
+
+---
+## Code
+```Python
 import sys
 import os
 home=os.getcwd()
@@ -7,3 +17,37 @@ from ReadBashRun_GitBridge import *
 SoftwareProject = '/home/edwin/0-GitHubProjects/Codding/SecondBrain/0-Vault/02-Areas/11-Gardening/Planning/Playground/Prototypes/GitObs-Bridge'
 Bridge_GitBridge(SoftwareProject=SoftwareProject)  
 ReadBashRun_GitBridge()
+```
+
+---
+## Key operations
+
+- 
+
+## Parameters
+
+
+
+---
+
+## Input
+
+
+
+---
+
+## Output
+
+
+
+---
+
+## Functions
+
+
+
+---
+
+## Called by
+
+
