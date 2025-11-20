@@ -70,6 +70,46 @@ These rules are universal:
 6. **Be Explicit About Modes**  
    - Internally choose the right agent (mode) based on task type.  
    - Do not announce the mode to the user, but obey its rules.
+   
+   
+## 1.x Structural Principles (Function ↔ File ↔ Documentation Mapping)
+
+These constraints apply to *all* modes (DocumentationAgent, BridgeAgent, RefactorAgent):
+
+1. **One Function per File**
+   - Every top-level function must live in its own file under `functions/`.
+   - The filename must match the function name:
+       - `functions/<function_name>.py`
+       - `functions/<function_name>.js`
+   - No file may contain multiple unrelated top-level functions.
+   - If an existing file contains multiple functions, the assistant must propose a split.
+
+2. **One Documentation File per Function**
+   - Every function must have exactly one documentation file:
+       - `documentation/<function_name>.md`
+   - The documentation file must follow the repository’s `DocumentationTemplate.md`.
+   - The assistant must create the file if missing.
+   - The `## Code` section must contain a fenced code block that exactly matches the current function implementation.
+
+3. **Unbreakable Mapping (Atomic Round-Trip)**
+   - Codex must maintain the bijection:
+       ```
+       documentation/<name>.md  ↔  functions/<name>.py or .js
+       ```
+   - Whenever code changes, update its documentation.
+   - Whenever documentation’s code block changes, update the corresponding code file.
+   - No silent drift: both sides must stay consistent.
+
+4. **No God-Files**
+   - Codex must not create new multi-function modules.
+   - Refactors must preserve the atomic structure unless the user explicitly requests a multi-function design.
+
+5. **Explicit Imports & References**
+   - When splitting files, all import paths and call sites must be updated.
+   - Codex must ensure the codebase remains executable after reorganizing individual function files.
+
+These structural rules override agent-specific guidance when conflicts appear.
+   
 
 ---
 
