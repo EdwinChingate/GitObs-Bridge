@@ -4,54 +4,55 @@ language: Python
 ---
 ## Description
 
+`ExtractCodeblock_GitBridge` reads a documentation file and returns the code block contents with its language. It prepares helper paths such as `Path(FileLoc)`. It calls `Path`, `extract_code_block` as part of its workflow.
 
 ---
 ## Code
 ```Python
-import numpy as np
-def ExtractCodeblock_GitBridge(FileLoc):
-    file = open(FileLoc, 'r')    
-    lines = np.array(file.readlines())
-    file.close()
-    start = int(np.where(lines == "## Code\n")[0][0])+1
-    language_clue = lines[start].replace('```','')
-    language = language_clue.replace('\n','')
-    end = np.where(lines == "## Key operations\n")[0][0]-1
-    codeblock = ''.join(list(lines[start:end]))
-    codeblock = codeblock.replace('```'+language,'')
-    codeblock = codeblock.replace('```\n','')
-    return [codeblock,language]
+"""Wrapper for extracting fenced code blocks from documentation."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from .extract_code_block import extract_code_block
+
+
+def ExtractCodeblock_GitBridge(FileLoc: str, section_header: str = "## Code"):
+    """Backward compatible wrapper that returns the code and language as a list."""
+
+    block = extract_code_block(Path(FileLoc), section_header=section_header)
+    return [block.code, block.language]
 ```
 
 ---
 ## Key operations
 
-- 
+- Calls `extract_code_block` to delegate work.
+- Calls `Path` to delegate work.
 
+---
 ## Parameters
 
-
+- `FileLoc`: user supplied argument consumed directly by `ExtractCodeblock_GitBridge`.
+- `section_header`: user supplied argument consumed directly by `ExtractCodeblock_GitBridge`.
 
 ---
-
 ## Input
 
-
+- `Path(FileLoc)`: derived from `Path(FileLoc)` to keep track of resources.
 
 ---
-
 ## Output
 
-
+- `[block.code, block.language]`
 
 ---
-
 ## Functions
 
-
+- [`extract_code_block`](extract_code_block.md): helper function invoked inside the workflow.
 
 ---
-
 ## Called by
 
-
+- [`Bridge_GitBridge`](Bridge_GitBridge.md) uses this helper.
