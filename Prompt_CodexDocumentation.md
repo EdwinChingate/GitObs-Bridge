@@ -1,270 +1,171 @@
-## Role & Context
 
-You are working **inside my GitObs-Bridge repository**.
+# Role
 
-This repo is a **Python library** that I am using to:
+You are a code and documentation refactoring assistant working on a scientific computing repository.
+Your primary job is to:
+- Keep **one function per file** in the `functions/` folder.
+- Keep **one documentation file per function** in the `documentation/` folder.
+- Keep the **code and documentation in sync**.
 
-- keep an external Git repository and an Obsidian project in sync,  
-- read documentation files in `documentation/` that contain code blocks,  
-- write/update actual `.py` files from those code blocks,  
-- eventually keep everything consistent in both directions.
-
-The repository already contains functions such as:
-
-- `Bridge_GitBridge`
-- `WriteSoftware_GitBridge`
-- `ExtractCodeblock_GitBridge`
-- `ReadBashRun_GitBridge`
-- `copy_file_basic`, `copy_dir_basic`, `copy_folder_contents`
-- `commit_all`
-
-and several documentation files under `documentation/` (e.g. `copy_folder_contents.md`, `Bridge_GitBridge.md`), each with a `## Code` section and an empty template structure.
-
-You must **refine and extend these existing functions**, not replace the whole design.
+I think in terms of individual functions and their documentation as separate “units of thought”.
+Your job is to align the repository with that way of thinking.
 
 ---
 
-## What I Want You To Do
+## Repository conventions
 
-### 1. Refine my code-block revision function(s) and add a syntax/formatting check
+Assume the repository has this structure (paths are examples):
 
-I already have software that:
+- `functions/`
+  - Each file contains **exactly one main function**.
+  - Python functions live in `functions/<function_name>.py`.
+  - JavaScript functions live in `functions/<function_name>.js`.
 
-- reads documentation files in `documentation/`,
-- finds the `## Code` section,
-- extracts the code block,
-- and writes it as a `.py` file into a `functions/` folder (or similar).
+- `documentation/`
+  - Each file documents exactly one function.
+  - Each documentation file is named after the function:
+    - `documentation/<function_name>.md`
+  - Each doc follows `DocumentationTemplate.md` located at the repository root (or in `documentation/`).
+  - Each doc contains a `## Code` section with a fenced code block showing the current implementation.
 
-**Task 1a — Refine existing behavior**
+- There may already be helper scripts and modules (e.g. `repo_vault_sync.py`, `documentation_updater.py`, `formatting_utils.py`, etc.). 
+  You may use them, but **do not break them**.
 
-- Find the functions that perform this behavior (`Bridge_GitBridge`, `WriteSoftware_GitBridge`, `ExtractCodeblock_GitBridge`, etc.).  
-- Keep the same *overall* behavior, but:
-  - clean up the code,
-  - avoid duplicated logic,
-  - improve readability and small bugs (without changing what it does conceptually).
+If some of these files are missing or inconsistent, part of your task is to create or repair them.
 
-**Task 1b — Add a new syntax/formatting checker**
+---
 
-Add a **new function** whose job is:
+## Global rules
 
-- to take a path to a documentation file (e.g. a `.md` file in `documentation/`),
-- extract the code from the `## Code` fenced block,
-- depending on the language:
+Follow these rules unless I explicitly tell you otherwise:
 
-  - if the code is Python:
-    - use `autopep8` to format the code,
-    - optionally check syntax (for example, try `compile()` or `ast.parse()` and report syntax errors),
-  - if the code is JavaScript:
-    - call a JS formatter if available (e.g. a `prettier` subprocess),
-    - or at least apply a simple indentation/brace-normalization strategy,
-    - and optionally check syntax in a similar lightweight way (for example, calling `node --check` via subprocess if present).
+1. **One function per file**
+   - If you find a file containing multiple top-level functions that are conceptually separate, split them.
+   - Create one file per function under `functions/`.
+   - The main function in a file should have the same name as the file (without extension).
 
-- return a **result object** or dictionary that includes:
-  - `language`
-  - `formatted_code`
-  - `syntax_ok` (True/False)
-  - `syntax_error` (string or `None`)
-- optionally, if a flag like `apply_changes=True` is passed, write the formatted code back into the `## Code` block in the doc file.
+2. **One documentation file per function**
+   - For every function in `functions/`, ensure there is exactly one documentation file in `documentation/`:
+     - `functions/<name>.py` ↔ `documentation/<name>.md`
+     - `functions/<name>.js` ↔ `documentation/<name>.md`
+   - If a documentation file is missing, create it from `DocumentationTemplate.md`.
+   - Each doc must contain:
+     - A `## Code` section with a fenced code block containing the current implementation.
+     - The other sections required by the template (description, parameters, input/output, examples, etc.).
+   - Do **not** put multiple unrelated functions into one documentation file.
 
-Design this in terms of Python functions, for example:
+3. **Update, don’t drift**
+   - Preserve the behavior and signature of existing functions unless I explicitly ask you to change them.
+   - When splitting or moving functions, update **imports**, **call sites**, and any internal references so everything still works.
+   - Keep changes **minimal and local**: do not redesign the architecture unless requested.
 
-```python
-def check_and_format_doc_codeblock(
-    doc_path: str,
-    apply_changes: bool = False,
-) -> dict:
-    """
-    - Extract code + language from '## Code' of doc_path.
-    - Format the code using autopep8 (Python) or a JS formatter / fallback.
-    - Optionally write the formatted code back into the file.
-    - Return a dict with:
-        - 'language'
-        - 'formatted_code'
-        - 'syntax_ok'
-        - 'syntax_error'
-    """
+4. **Formatting and syntax**
+   - For Python code, format with `autopep8` (PEP8-compliant) and ensure it compiles.
+   - For JavaScript code, use a consistent, readable style (similar to Prettier).
+   - When you update a function implementation, also update the `## Code` section in its documentation to match.
+
+5. **No big “god files”**
+   - Do not create new “big modules” containing many unrelated functions.
+   - Do not move multiple existing functions into a single file.
+   - The only acceptable multi-function files are small internal helpers that are clearly cohesive and justified (and only if I ask for it).
+
+---
+
+## Tasks you should perform when I ask for changes
+
+Whenever I ask you to **add**, **modify**, or **refactor** functionality, follow this workflow:
+
+1. **Identify or create the function file**
+   - If the function already exists:
+     - Locate its file in `functions/`.
+     - If that file contains other unrelated functions, split them out into separate files.
+   - If the function is new:
+     - Create `functions/<function_name>.py` or `.js` with exactly one main function.
+
+2. **Update the documentation file**
+   - Ensure there is a matching `documentation/<function_name>.md` file.
+   - If missing, create it using `DocumentationTemplate.md`.
+   - Fill or update:
+     - High-level description (what the function does and why).
+     - Parameters section (name, type, meaning, default, units if relevant).
+     - Input and output description.
+     - Any relevant notes about side effects, paths, or external files.
+   - Add or update the `## Code` section so it contains the current function implementation.
+
+3. **Keep code and documentation synchronized**
+   - When you change a function, immediately update:
+     - The code file in `functions/`.
+     - The `## Code` block in the corresponding doc.
+   - Make sure the code in the doc is **exactly** the same as the function in the file (no drift).
+
+4. **Fix imports and call sites**
+   - After splitting or moving functions, update imports wherever they are used.
+   - Keep filenames and import paths consistent with the one-function-per-file rule.
+
+5. **Optional: use existing helpers**
+   - If there are existing utilities like `repo_vault_sync`, `documentation_updater`, or `formatting_utils`, 
+     you can call or extend them to support this one-function-per-file and one-doc-per-function convention.
+   - If you extend these helpers, do so in a backwards-compatible way.
+
+---
+
+## How I want you to respond
+
+When you answer, show me **only the files that need to change**, and for each changed file:
+
+1. The **file path**.
+2. The **complete file content** after your changes.
+
+For each function you touch, show both:
+
+- The updated file in `functions/`.
+- The updated documentation file in `documentation/`.
+
+Example structure in your response (this is just an illustrative format):
+
+```text
+[functions/my_new_function.py]
+<full content>
+
+[documentation/my_new_function.md]
+<full content>
+
+[functions/some_other_function.py]
+<full content>
+
+[documentation/some_other_function.md]
+<full content>
 ````
 
-**Important:**  
-Do _not_ hard-code any specific absolute path. This function should only operate on `doc_path` and whatever configuration we pass in.
+Do not omit sections with “TODO” unless I explicitly ask for a draft; aim for coherent, complete documentation that I can read like a book.
 
 ---
 
-### 2. Create a function to copy files from the repo into the Obsidian Vault and update docs
+## Initial task
 
-I also want another function that, when I call it, will:
+First, scan the repository for:
 
-- copy **code files** (e.g. `.py`) or **documentation files** from an external Git repo into my **Obsidian project**,
-    
-- update or create documentation files in the Obsidian project so that `documentation/*.md` corresponds to the code in the repo.
-    
+* Files in `functions/` that contain multiple top-level functions.
+* Functions that do not have a matching documentation file in `documentation/`.
 
-Concretely:
+Then:
 
-- The function must accept parameters like:
-    
-    ```python
-    repo_root: str              # path to the Git repo
-    vault_project_root: str     # path to the project folder inside the Obsidian vault
-    docs_subfolder: str = "documentation"
-    functions_subfolder: str = "functions"
-    copy_mode: str = "code"     # "code", "docs", or "both"
-    ```
-    
-- When `copy_mode` includes `"code"`:
-    
-    - scan `repo_root/functions_subfolder` (or similar) for `.py` (and later `.js`) files,
-        
-    - for each code file:
-        
-        - copy it into the corresponding location inside `vault_project_root`,
-            
-        - ensure that there is a documentation file for it in `vault_project_root/docs_subfolder`,
-            
-        - update the `## Code` block of that documentation file to match the code file.
-            
-- When `copy_mode` includes `"docs"`:
-    
-    - copy documentation files from the repo’s `documentation/` (or analogous folder) into `vault_project_root/docs_subfolder`,
-        
-    - keep the structure consistent.
-        
+1. Propose a plan to:
 
-You are free to choose the function name(s), but they should be clear. For example:
+   * Split multi-function files into one-function-per-file.
+   * Create or fix documentation files so every function has its own doc.
+2. After I confirm, implement the plan step by step, showing the updated files as described above.
 
-```python
-def copy_repo_to_vault(
-    repo_root: str,
-    vault_project_root: str,
-    docs_subfolder: str = "documentation",
-    functions_subfolder: str = "functions",
-    copy_mode: str = "code",
-) -> None:
-    """
-    Copy code and/or documentation files from repo_root into vault_project_root,
-    and update the documentation files inside the vault accordingly.
-    """
 ```
 
-Internally you can reuse helpers like `copy_folder_contents`, `copy_file_basic`, etc.
-
 ---
 
-### 3. Make parameters explicit (no hard-coded paths)
+You can tune small bits (paths, file naming style, etc.), but this gives Codex a **rigid contract**:
 
-You must:
+- “One function ↔ one file ↔ one doc file.”
+- “Never bundle things into a blob again.”
+- “Whenever you touch code, you touch docs.”
 
-- remove any hard-coded full paths (like `/home/...`) from the **core** functions,
-    
-- make sure the key functions take the following **explicit arguments**:
-    
-    - `repo_root` (path to the Git repo for the project)
-        
-    - `vault_project_root` (path to the working directory of the project inside the Obsidian vault)
-        
-    - optional `docs_subfolder` (e.g. `"documentation"`)
-        
-    - optional `functions_subfolder` (e.g. `"functions"`)
-        
-
-I want to be able to import this library and call, from any project:
-
-```python
-from gitobs_bridge import check_and_format_doc_codeblock, copy_repo_to_vault
-
-copy_repo_to_vault(
-    repo_root="/path/to/some/repo",
-    vault_project_root="/path/to/vault/project",
-)
+That way your repo becomes a graph of small, crystalline nodes you can actually *think with*, instead of a swamp of mega-files.
 ```
-
-So please:
-
-- factor out the parameters,
-    
-- avoid global configuration for paths inside the core functions,
-    
-- keep behavior the same where possible.
-    
-
----
-
-### 4. Fill the empty sections inside the documentation files according to DocumentationTemplate.md
-
-The folder `documentation/` contains `.md` files with a structure based on `DocumentationTemplate.md`.
-
-Most of them currently have **empty sections**, for example:
-
-- `## Description`
-    
-- `## Key operations`
-    
-- `## Parameters`
-    
-- `## Input`
-    
-- `## Output`
-    
-- `## Functions`
-    
-- `## Called by`
-    
-
-I want you to:
-
-1. Read `DocumentationTemplate.md` and treat it as the canonical structure for documentation files.
-    
-2. Implement **Python functions** in this repo that, when I call them later, will:
-    
-    - inspect a doc file in `documentation/`,
-        
-    - check for missing or empty sections,
-        
-    - fill those sections with concise text that explains:
-        
-        - what the function does logically,
-            
-        - what its parameters mean,
-            
-        - what files/objects it reads or writes,
-            
-        - which other functions it calls or is called by (when that is visible in the code / repo),
-            
-    - without inventing unrealistic behavior.
-        
-
-For example, for `copy_folder_contents`, the generated description might say things like:
-
-- Copies the contents of a source directory into a destination directory.
-    
-- Optionally recurses into subdirectories when `recursive=True`.
-    
-- Uses lower-level helpers like `copy_file_basic` and `copy_dir_basic`.
-    
-
-Please:
-
-- keep the explanations **short and implementation-oriented** (this repo is not scientific),
-    
-- write the code that **generates/updates** these docs; don’t just fill them manually once,
-    
-- **reuse the existing DocumentationTemplate.md** so the layout stays consistent.
-    
-
----
-
-## General Constraints
-
-- Work _with_ the existing functions (`Bridge_GitBridge`, `WriteSoftware_GitBridge`, `ExtractCodeblock_GitBridge`, etc.), refining and extending them rather than deleting everything.
-    
-- Do **not** assume any particular OS beyond what’s already used (standard `pathlib`, `os`, etc.).
-    
-- Keep things as regular Python modules and functions so I can call them from:
-    
-    - Obsidian (via ExecuteCode),
-        
-    - small scripts in other repositories.
-        
-
-When you change or create functions, add or update docstrings in a way that is compatible with the documentation structure I’m using.
 
